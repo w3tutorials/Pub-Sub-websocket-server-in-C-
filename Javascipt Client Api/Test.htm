@@ -1,0 +1,332 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+    <head>
+        <title>Test</title>
+      
+        <script type="text/javascript" src="jquery.js"></script>
+
+        <script>
+            function WebSocketClient() {
+                var self=this;
+                this.ws;
+                this.subscribersArray = [];
+
+
+                this.findSubscriber = function (topic, constrains, remove) {
+
+
+                    debugger;
+                    var len = this.subscribersArray.length;
+
+                      for (var i = 0; i < len; i++) {
+
+                        if (this.subscribersArray[i].topic == topic) {
+
+                            for (var j = 0; j <constrains.length; j++) {
+
+
+                                if ($.inArray(constrains[j], this.subscribersArray[i].constrains)) {
+
+                                    var temp = this.subscribersArray[i];
+                                    break;
+
+                                }
+                                 
+                              }
+                      
+
+                             if (remove == true)
+                                 this.subscribersArray.splice(i, 1);
+
+                             return temp;
+
+
+                         }
+
+                    }
+
+                    return null;
+
+
+                 };
+
+
+
+                this.connect = function (WsServerAddress) {
+
+                    var support = "MozWebSocket" in window ? 'MozWebSocket' : ("WebSocket" in window ? 'WebSocket' : null);
+                    if (support == null) {
+                        return;
+
+                    }
+
+                    this.ws = new window[support](WsServerAddress);
+
+                    // when data is comming from the server, this metod is called
+                   
+
+
+                    this.ws.onopen = function () {
+
+                        console.log("Websocket Connection Opened " + WsServerAddress);
+
+                    };
+
+
+                    this.ws.onclose = function () {
+
+                        console.log("Websocket Connection closed");
+
+                    }
+                    this.ws.onmessage = function (evt) {
+                        //  appendMessage("# " + evt.data + "
+
+                        debugger;
+
+
+                        var request = null;
+
+                        try {
+
+                            var request = JSON.parse(evt.data);
+
+                        } catch (e) {
+
+                            console.log("cannot desirialize json " + evt.data);
+                        }
+
+                        if (request != null) {
+
+                            var subscriber = self.findSubscriber(request.Topic, request.Constrains, false);
+
+                            if (subscriber != null)
+                                subscriber.callback.call(this, request.Msg);
+                        }
+
+
+
+                    };
+
+                  
+
+                };
+
+              
+
+
+                this.subscribe = function (topic, constrains, callback) {
+
+                    var request = {
+
+                        'RequestType': 'SUBSCRIBE',
+                        'Topic': topic,
+                        'Constrains': constrains
+
+                    }
+
+                    var requestJson = JSON.stringify(request, null, 4);
+
+                    console.log(requestJson);
+
+                    this.sendMessage(requestJson);
+
+                    var subcriber = { topic: topic, constrains: constrains, callback: callback };
+
+                    this.subscribersArray.push(subcriber);
+
+                };
+
+
+                this.unsubscribe = function (topic,constrains) {
+
+                    var request = {
+
+                        'RequestType': 'UNSUBSCRIBE',
+                        'Topic': topic,
+                        'Constrains': constrains
+
+                    }
+
+
+                    var requestJson = JSON.stringify(request, null, 4);
+                    this.sendMessage(requestJson);
+
+                    this.findSubscriber(topic, constrains, "true");
+
+                };
+
+
+                this.publish = function (topic, constrains, msg) {
+
+ 
+                    var request = {
+
+                        'RequestType': 'PUBLISH',
+                        'Topic': topic,
+                        'Constrains': constrains,
+                        'Msg': msg
+                    }
+
+
+                    var requestJson = JSON.stringify(request, null, 4);
+                    this.sendMessage(requestJson);
+
+                  
+
+
+
+                };
+
+                this.disconnect = function () {
+
+                    if (this.ws) {
+                        ws.close();
+                    }
+
+                };
+
+                this.sendMessage = function (msg) {
+
+                    if (this.ws) {
+                        this.ws.send(msg);
+
+                    }
+
+
+                };
+            }
+
+
+
+        $(document).ready(function () {
+
+            var  client=new CpWebSocketClient();
+            client.connect("ws://localhost:2012");
+      
+            client.ws.onopen = function () {
+
+
+                var constrains = [];
+
+                var constrain = {
+                    'Operand': '=',
+                    'Variable': 'container',
+                     'Value':'1'
+
+                }
+
+
+                constrains.push(constrain);
+
+                client.subscribe("test", constrains, function (data) {
+
+
+                    alert(data)
+                });
+
+
+                client.publish("test", constrains, 'hi there');
+             
+
+             
+
+            };
+
+        
+
+            var constrain = {
+                'Operand': '=',
+                'Variable': 'container',
+                'Value': '1'
+
+            };
+          
+        });
+        
+        
+        
+        </script>
+
+
+        <script type="text/javascript">
+            var noSupportMessage = "Your browser cannot support WebSocket!";
+            var ws;
+
+            function appendMessage(message) {
+                $('body').append(message);
+            }
+
+            function connectSocketServer() {
+                var support = "MozWebSocket" in window ? 'MozWebSocket' : ("WebSocket" in window ? 'WebSocket' : null);
+
+                if (support == null) {
+                    appendMessage("* " + noSupportMessage + "<br/>");
+                    return;
+                }
+
+                appendMessage("* Connecting to server ..<br/>");
+                // create a new websocket and connect
+                ws = new window[support]('ws://localhost:2012/');
+
+                // when data is comming from the server, this metod is called
+                ws.onmessage = function (evt) {
+                    appendMessage("# " + evt.data + "<br />");
+                };
+
+                // when the connection is established, this method is called
+                ws.onopen = function () {
+                    appendMessage('* Connection open<br/>');
+                    $('#messageInput').attr("disabled", "");
+                    $('#sendButton').attr("disabled", "");
+                    $('#connectButton').attr("disabled", "disabled");
+                    $('#disconnectButton').attr("disabled", "");
+                };
+
+                // when the connection is closed, this method is called
+                ws.onclose = function () {
+                    appendMessage('* Connection closed<br/>');
+                    $('#messageInput').attr("disabled", "disabled");
+                    $('#sendButton').attr("disabled", "disabled");
+                    $('#connectButton').attr("disabled", "");
+                    $('#disconnectButton').attr("disabled", "disabled");
+                }
+            }
+
+            function sendMessage() {
+                if (ws) {
+                    var messageBox = document.getElementById('messageInput');
+                    ws.send(messageBox.value);
+                    messageBox.value = "";
+                }
+            }
+
+            function disconnectWebSocket() {
+                if (ws) {
+                    ws.close();
+                }
+            }
+
+            function connectWebSocket() {
+                connectSocketServer();
+            }
+
+            window.onload = function () {
+                $('#messageInput').attr("disabled", "disabled");
+                $('#sendButton').attr("disabled", "disabled");
+                $('#disconnectButton').attr("disabled", "disabled");
+            }
+    
+    </script>
+    </head>
+    <body>
+        <input type="button" id="connectButton" value="Connect" onclick="connectWebSocket()"/> <input type="button" id="disconnectButton" value="Disconnect" onclick="disconnectWebSocket()"/> 
+       
+        <textarea name="messageInput" id="messageInput" cols="60" rows="10"></textarea>
+        <input type="button" id="sendButton" value="Send" onclick="sendMessage()"/> <br />
+   
+            <ul>
+          
+            </ul>
+      
+    </body>
+</html>

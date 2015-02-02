@@ -1,0 +1,3 @@
+C:\Users\constantinos\Development\Projects\ContainPlatform\WebSockets\SuperWebSocketServer-PubSubImpementation\bin\Debug\SuperWebSocket.PubSubProtocol.exe.config
+C:\Users\constantinos\Development\Projects\ContainPlatform\WebSockets\SuperWebSocketServer-PubSubImpementation\obj\Debug\SuperWebSocket.PubSubProtocol.exe
+C:\Users\constantinos\Development\Projects\ContainPlatform\WebSockets\SuperWebSocketServer-PubSubImpementation\obj\Debug\SuperWebSocket.PubSubProtocol.pdb

@@ -1,0 +1,11 @@
+﻿{
+ 
+  "RequestType": "PUBLISH",
+    "Topic": "test",
+  "Constrains": [
+    {"Operand":"=","Variable":"container","Value":"1"}
+ 
+    ],
+  "Msg":"TEST MESSAGE"
+ 
+}

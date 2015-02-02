@@ -1,0 +1,11 @@
+﻿{
+ 
+  "RequestType": "SUBSCRIBE",
+    "Topic": "test",
+  "Constrains": [
+    {"Operand":"=","Variable":"container","Value":"1"},
+    {"Operand":">","Variable":"container1","Value":"somecontainerid1"}
+    
+    ] 
+ 
+}
